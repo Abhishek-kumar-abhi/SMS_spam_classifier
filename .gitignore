@@ -1,1 +1,22 @@
 venv
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# NLTK data directory (if stored locally)
+nltk_data/
+
+# Streamlit configuration directory
+.streamlit/
+
+# Serialized models and vectorizers
+*.pkl
+
+# Jupyter checkpoints
+.ipynb_checkpoints
+
+# distribution files
+build/
+dist/
+*.egg-info

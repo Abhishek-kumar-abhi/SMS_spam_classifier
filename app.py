@@ -1,9 +1,19 @@
 import streamlit as st
 import pickle
 import string
-from nltk.corpus import stopwords
 import nltk
+from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
+
+# make sure required NLTK data is available on first run
+# Streamlit cloud (and other hosts) start with a fresh environment,
+# so the packages need to be downloaded at startup.
+for pkg in ("punkt", "stopwords"):
+    try:
+        nltk.data.find(f"tokenizers/{pkg}")
+    except LookupError:
+        nltk.download(pkg)
+
 
 ps = PorterStemmer()
 
@@ -32,23 +42,36 @@ def transform_text(text):
 
     return " ".join(y)
 
-tfidf = pickle.load(open('vectorizer.pkl','rb'))
-model = pickle.load(open('model.pkl','rb'))
+@st.cache_resource
+
+def load_artifacts():
+    """Load the vectorizer and classification model once and cache them."""
+    with open('vectorizer.pkl', 'rb') as f:
+        vect = pickle.load(f)
+    with open('model.pkl', 'rb') as f:
+        m = pickle.load(f)
+    return vect, m
+
+# load on first run, subsequent reruns will use cached copies
+tfidf, model = load_artifacts()
 
 st.title("Email/SMS Spam Classifier")
 
 input_sms = st.text_area("Enter the message")
 
 if st.button('Predict'):
-
-    # 1. preprocess
-    transformed_sms = transform_text(input_sms)
-    # 2. vectorize
-    vector_input = tfidf.transform([transformed_sms])
-    # 3. predict
-    result = model.predict(vector_input)[0]
-    # 4. Display
-    if result == 1:
-        st.header("Spam")
+    # guard against empty input
+    if not input_sms or input_sms.strip() == "":
+        st.warning("Please enter a message before clicking Predict.")
     else:
-        st.header("Not Spam")
+        # 1. preprocess
+        transformed_sms = transform_text(input_sms)
+        # 2. vectorize
+        vector_input = tfidf.transform([transformed_sms])
+        # 3. predict
+        result = model.predict(vector_input)[0]
+        # 4. Display
+        if result == 1:
+            st.header("Spam")
+        else:
+            st.header("Not Spam")
