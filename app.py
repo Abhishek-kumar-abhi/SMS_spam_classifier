@@ -12,6 +12,7 @@ from nltk.stem.porter import PorterStemmer
 # correctly installed.
 
 nltk.download('punkt', quiet=True)
+nltk.download('punkt_tab', quiet=True)  # newer NLTK versions use punkt_tab
 nltk.download('stopwords', quiet=True)
 
 
@@ -20,12 +21,18 @@ ps = PorterStemmer()
 
 def transform_text(text):
     text = text.lower()
-    # ensure tokenizer resource is present just before use
+    
+    # Robust tokenization with fallback
     try:
-        nltk.data.find('tokenizers/punkt')
+        text = nltk.word_tokenize(text)
     except LookupError:
-        nltk.download('punkt', quiet=True)
-    text = nltk.word_tokenize(text)
+        # If punkt_tab is missing, download it and retry
+        nltk.download('punkt_tab', quiet=True)
+        try:
+            text = nltk.word_tokenize(text)
+        except Exception:
+            # Last resort: simple space-based tokenization
+            text = text.split()
 
     y = []
     for i in text:
