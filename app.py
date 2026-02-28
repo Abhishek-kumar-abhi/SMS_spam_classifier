@@ -5,14 +5,14 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
-# make sure required NLTK data is available on first run
-# Streamlit cloud (and other hosts) start with a fresh environment,
-# so the packages need to be downloaded at startup.
-for pkg in ("punkt", "stopwords"):
-    try:
-        nltk.data.find(f"tokenizers/{pkg}")
-    except LookupError:
-        nltk.download(pkg)
+# make sure required NLTK data is available on every start
+# Streamlit Cloud starts with a fresh environment, and the dataset
+# downloader sometimes leaves partial packages; performing a direct
+# download ensures both `punkt` and its language subdirectories are
+# correctly installed.
+
+nltk.download('punkt', quiet=True)
+nltk.download('stopwords', quiet=True)
 
 
 ps = PorterStemmer()
@@ -20,6 +20,11 @@ ps = PorterStemmer()
 
 def transform_text(text):
     text = text.lower()
+    # ensure tokenizer resource is present just before use
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt', quiet=True)
     text = nltk.word_tokenize(text)
 
     y = []
