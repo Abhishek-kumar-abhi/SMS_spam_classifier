@@ -1,5 +1,7 @@
 # SMS/Email Spam Classifier
 
+Application URL: https://smsspamclassifierabhi.streamlit.app/
+
 This repository contains a simple machine learning application that classifies text messages (SMS or email) as **spam** or **not spam**. The model and vectorizer are pre-trained and stored as pickled objects, while the front end is a Streamlit app located in `app.py`.
 
 ---
